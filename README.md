@@ -342,7 +342,10 @@ This rejects more frames but ensures remaining ones are clean.
    --voxel_size 0.1
    ```
 
-2. **Reduce ICP iterations** - Already at 50 by default (fast)
+2. **Increase loop closue iterations** - Already at 10 by default
+   ```bash
+   --loop_closure_search_interval 20
+   ```
 
 3. **Disable loop closure** (if enabled):
    ```bash
