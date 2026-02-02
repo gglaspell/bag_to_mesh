@@ -2,6 +2,10 @@
 
 Convert ROS 2 bag files containing LiDAR point clouds into high-quality 3D models with precision-tuned registration and drift correction.
 
+<img width="295" height="382" alt="Screenshot from 2026-02-02 17-49-30" src="https://github.com/user-attachments/assets/c3837188-8d22-4ec7-b964-5bdb4db53199" />
+<img width="295" height="382" alt="Screenshot from 2026-02-02 17-53-31" src="https://github.com/user-attachments/assets/557edbb4-de7b-4f22-bf36-50ec127b18de" />
+
+
 ---
 
 ## 📋 What This Does
@@ -202,6 +206,7 @@ docker run --rm \
 | `--loop_closure_radius` | `10.0` | 1.0-50.0 | Search radius for loop closure (meters) |
 | `--loop_closure_fitness_thresh` | `0.3` | 0.0-1.0 | Min fitness for loop closure acceptance |
 | `--level_floor` | `False` | - | Apply post-processing Z-leveling |
+| `--loop_closure_search_interval` | `10` | - | Frequency of loop closure search (every N frames) |
 
 ---
 
