@@ -591,12 +591,30 @@ def process_bag(args):
             pcd_clean,
             depth=9,
         )
+       
+        print(f"Initial mesh has {len(mesh.vertices)} vertices and {len(mesh.triangles)} triangles.")
+
+        # --- Start: Improvements from the new code ---
+
+        # Calculate a density threshold to remove the 5% of vertices with the lowest density.
+        # This value can be exposed as a CLI argument for more control.
         densities = np.asarray(densities)
         density_threshold = np.quantile(densities, 0.05)
-        mesh.remove_vertices_by_mask(densities < density_threshold)
-        mesh.remove_degenerate_triangles()
-        mesh.remove_unreferenced_vertices()
+        
+        print(f"Removing vertices below density quantile {density_threshold:.4f}")
+        vertices_to_remove = densities < density_threshold
+        mesh.remove_vertices_by_mask(vertices_to_remove)
+        
+        print(f"After density trimming: {len(mesh.vertices)} vertices and {len(mesh.triangles)} triangles.")
 
+        # Perform a full cleanup for a more robust mesh
+        print("Performing comprehensive mesh cleanup...")
+        mesh.remove_degenerate_triangles()
+        mesh.remove_duplicated_triangles()
+        mesh.remove_duplicated_vertices()
+        mesh.remove_non_manifold_edges()
+        mesh.remove_unreferenced_vertices() # Good to run this at the end.
+        
         obj_path = output_dir / f"{bag_path.stem}_mesh.obj"
         print(f"Saving final mesh to: {obj_path}")
         o3d.io.write_triangle_mesh(str(obj_path), mesh)
