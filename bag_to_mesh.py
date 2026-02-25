@@ -578,20 +578,47 @@ def process_bag(args):
             print(f"Warning: Floor leveling failed: {e}")
 
     # -----------------------------------------------------------------------
-    # 4) Voxel downsample (averages view rays), SOR, then restore geometric normals
+    # 4) Cleaning (Voxel, ROR, SOR, DBSCAN) while preserving view rays
     # -----------------------------------------------------------------------
     print("Voxel downsampling (this averages viewing rays)...")
     pcd_vox = pcd_combined.voxel_down_sample(args.voxel_size)
+    pcd_clean = pcd_vox
 
-    # Keep the averaged viewing rays through SOR (Open3D retains normals)
-    print("Statistical outlier removal...")
+    # 4.1 Radius Outlier Removal
+    print("Radius outlier removal (cleaning wispy noise)...")
     try:
-        pcd_clean, _ind = pcd_vox.remove_statistical_outlier(nb_neighbors=20, std_ratio=2.0)
-        if len(pcd_clean.points) == 0:
-            raise RuntimeError("SOR produced empty cloud")
+        pcd_tmp, _ = pcd_clean.remove_radius_outlier(nb_points=12, radius=args.voxel_size * 3.0)
+        if len(pcd_tmp.points) > 0:
+            pcd_clean = pcd_tmp
+        else:
+            print("Warning: ROR produced empty cloud; skipping this filter.")
     except Exception as e:
-        print(f"Warning: SOR failed ({e}); using voxel cloud without SOR.")
-        pcd_clean = pcd_vox
+        print(f"Warning: ROR failed ({e}); skipping ROR.")
+
+    # 4.2 Statistical Outlier Removal
+    print("Statistical outlier removal (cleaning distant noise)...")
+    try:
+        pcd_tmp, _ = pcd_clean.remove_statistical_outlier(nb_neighbors=20, std_ratio=2.0)
+        if len(pcd_tmp.points) > 0:
+            pcd_clean = pcd_tmp
+        else:
+            print("Warning: SOR produced empty cloud; skipping this filter.")
+    except Exception as e:
+        print(f"Warning: SOR failed ({e}); skipping SOR.")
+
+    # 4.3 DBSCAN Clustering (Removes floating artifacts/components)
+    print("DBSCAN clustering to retain only the main continuous structure...")
+    try:
+        labels = np.array(pcd_clean.cluster_dbscan(eps=args.voxel_size * 4.0, min_points=30, print_progress=False))
+        if len(labels) > 0 and labels.max() >= 0:
+            largest_cluster_idx = np.bincount(labels[labels >= 0]).argmax()
+            pcd_tmp = pcd_clean.select_by_index(np.where(labels == largest_cluster_idx)[0])
+            if len(pcd_tmp.points) > 0:
+                pcd_clean = pcd_tmp
+            else:
+                print("Warning: DBSCAN isolated 0 points; skipping clustering filter.")
+    except Exception as e:
+        print(f"Warning: DBSCAN failed ({e}); skipping DBSCAN.")
 
     # Save final point cloud (with view rays still in normals) for debugging
     ply_path = out_dir / f"{bag_path.stem}_cloud.ply"
