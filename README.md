@@ -23,6 +23,8 @@ This tool transforms ROS 2 bag files with `sensor_msgs/PointCloud2` data into:
 - **Loop Closure Detection** (Optional) - Finds and constrains revisited areas with FPFH feature matching
 - **Z-Axis Leveling** - Prevents vertical drift in planar environments
 - **Adaptive Frame Filtering** - Automatically skips low-quality registrations
+- **Advanced Noise Filtering** - Multi-stage pipeline to remove ghosting and floating artifacts
+- **View-Ray Normal Orientation** - Tracks historical sensor positions to force surface normals to face the camera, eliminating "inside-out" meshes
 
 ---
 
