@@ -649,7 +649,7 @@ def process_bag(args):
     obj_path = None
     try:
         mesh, densities = o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(
-            pcd_clean, depth=9
+            pcd_clean, depth=9, n_threads=args.workers
         )
 
         print(f"Initial mesh: {len(mesh.vertices)} vertices, {len(mesh.triangles)} triangles")
@@ -705,6 +705,7 @@ def main():
     parser.add_argument("--loop_closure_search_interval", type=int, default=10, help="Frequency of loop closure search (every N frames).")
 
     parser.add_argument("--level_floor", action="store_true", help="Attempt to level the final map with the floor plane.")
+    parser.add_argument("--workers", type=int, default=4, help="Parallel worker threads for grid generation.")
 
     if len(sys.argv) == 1:
         parser.print_help(sys.stderr)
