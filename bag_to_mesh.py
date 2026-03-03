@@ -662,11 +662,12 @@ def process_bag(args):
             print(f"After density trim: {len(mesh.vertices)} vertices, {len(mesh.triangles)} triangles")
 
         # Cleanup
-        mesh.remove_degenerate_triangles()
-        mesh.remove_duplicated_triangles()
-        mesh.remove_duplicated_vertices()
-        mesh.remove_non_manifold_edges()
-        mesh.remove_unreferenced_vertices()
+        mesh.remove_duplicated_vertices()     # 1. merge coincident vertices first
+        mesh.remove_duplicated_triangles()    # 2. now dedup triangles with merged indices
+        mesh.remove_degenerate_triangles()    # 3. catch any zero-area triangles created above
+        mesh.remove_non_manifold_edges()      # 4. remove fan edges after topology is clean
+        mesh.remove_degenerate_triangles()    # 5. second pass — non-manifold removal can expose new ones
+        mesh.remove_unreferenced_vertices()   # 6. always last
 
         # Extract largest connected component to ensure structural connectivity for navigation
         print("Extracting largest connected component...")
@@ -678,6 +679,37 @@ def process_bag(args):
             triangles_to_remove = triangle_clusters != largest_cluster_idx
             mesh.remove_triangles_by_mask(triangles_to_remove)
             mesh.remove_unreferenced_vertices()
+
+        # Iteratively clean up non-manifold geometry and topological mess
+        print("Cleaning non-manifold geometry iteratively...")
+        max_iters = 10
+        for i in range(max_iters):
+            # 1. Merge duplicates and degenerates first
+            mesh.remove_duplicated_vertices()
+            mesh.remove_duplicated_triangles()
+            mesh.remove_degenerate_triangles()
+
+            # 2. Fix non-manifold edges
+            if not mesh.is_edge_manifold(allow_boundary_edges=True):
+                mesh.remove_non_manifold_edges()
+
+            # 3. Fix non-manifold vertices
+            if not mesh.is_vertex_manifold():
+                nm_verts = mesh.get_non_manifold_vertices()
+                if len(nm_verts) > 0:
+                    mask = np.zeros(len(mesh.vertices), dtype=bool)
+                    mask[np.asarray(nm_verts)] = True
+                    mesh.remove_vertices_by_mask(mask)
+
+            # 4. Clean up any floating vertices left behind by the deletions
+            mesh.remove_unreferenced_vertices()
+
+            # 5. Break the loop if the mesh is completely clean
+            if mesh.is_edge_manifold(allow_boundary_edges=True) and mesh.is_vertex_manifold():
+                print(f"Topology cleaned successfully in {i+1} iterations.")
+                break
+        else:
+            print("Warning: Reached max iterations. Mesh might still have non-manifold geometry.")
 
         # Validation checks
         print("Verifying mesh integrity...")
