@@ -668,6 +668,27 @@ def process_bag(args):
         mesh.remove_non_manifold_edges()
         mesh.remove_unreferenced_vertices()
 
+        # Extract largest connected component to ensure structural connectivity for navigation
+        print("Extracting largest connected component...")
+        triangle_clusters, cluster_n_triangles, cluster_area = mesh.cluster_connected_triangles()
+        triangle_clusters = np.asarray(triangle_clusters)
+        cluster_n_triangles = np.asarray(cluster_n_triangles)
+        if len(cluster_n_triangles) > 0:
+            largest_cluster_idx = cluster_n_triangles.argmax()
+            triangles_to_remove = triangle_clusters != largest_cluster_idx
+            mesh.remove_triangles_by_mask(triangles_to_remove)
+            mesh.remove_unreferenced_vertices()
+
+        # Validation checks
+        print("Verifying mesh integrity...")
+        is_edge_manifold = mesh.is_edge_manifold(allow_boundary_edges=True)
+        is_vertex_manifold = mesh.is_vertex_manifold()
+        # has_self_intersections = mesh.is_self_intersecting()
+        print(f"  - Edge Manifold: {is_edge_manifold}")
+        print(f"  - Vertex Manifold: {is_vertex_manifold}")
+        # print(f"  - Self-Intersecting: {has_self_intersections}")
+
+
         obj_path = out_dir / f"{bag_path.stem}_mesh.obj"
         o3d.io.write_triangle_mesh(str(obj_path), mesh)
         print(f"Saved mesh: {obj_path}")
