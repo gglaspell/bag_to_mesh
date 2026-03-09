@@ -208,9 +208,9 @@ docker run --rm \
 | --loop_closure_search_interval | 10       | -              | Frequency of loop closure search (every N frames)                                                                                                              |
 | --level_floor                  | False    | -              | Apply post-processing Z-leveling                                                                                                                               |
 | --decimate_target              | None     | 0.01-1.0 or >1 | Reduce mesh triangles after reconstruction. Values ≤ 1.0 = ratio to keep (e.g. 0.25 = keep 25%); values > 1 = absolute triangle count. Omit to skip decimation |
-| --odom_max_latency        | 0.5 s   | Staleness cutoff for odom↔pointcloud timestamp matching |
-| --poisson_depth           | 9       | Octree depth for Poisson reconstruction                 |
-| --density_trim_percentile | 0.05    | Bottom fraction of low-density vertices to remove       |
+| --odom_max_latency        | 0.5 s   | - | Staleness cutoff for odom↔pointcloud timestamp matching |
+| --poisson_depth           | 9       | - | Octree depth for Poisson reconstruction                 |
+| --density_trim_percentile | 0.05    | - | Bottom fraction of low-density vertices to remove       |
 
 ---
 
