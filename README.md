@@ -2,10 +2,6 @@
 
 Convert ROS 2 bag files containing LiDAR point clouds into high-quality 3D models with precision-tuned registration and drift correction.
 
-<img width="487" height="279" alt="Screenshot from 2026-02-10 11-58-33" src="https://github.com/user-attachments/assets/611a3bb6-dd71-4a18-bd6d-1df476b33ea7" />
-
-<img width="487" height="279" alt="Screenshot from 2026-02-10 11-58-52" src="https://github.com/user-attachments/assets/bb6f19b9-ea3d-41e2-954b-e24a419180ac" />
-
 ---
 
 ## 📋 What This Does
@@ -23,8 +19,6 @@ This tool transforms ROS 2 bag files with `sensor_msgs/PointCloud2` data into:
 - **Loop Closure Detection** (Optional) - Finds and constrains revisited areas with FPFH feature matching
 - **Z-Axis Leveling** - Prevents vertical drift in planar environments
 - **Adaptive Frame Filtering** - Automatically skips low-quality registrations
-- **Advanced Noise Filtering** - Multi-stage pipeline to remove ghosting and floating artifacts
-- **View-Ray Normal Orientation** - Tracks historical sensor positions to force surface normals to face the camera, eliminating "inside-out" meshes
 
 ---
 
@@ -195,20 +189,24 @@ docker run --rm \
 
 ## 📖 Parameter Quick Reference
 
-| Parameter | Default | Range | Purpose |
-|-----------|---------|-------|---------| 
-| `bag_path` | *required* | - | Path to ROS 2 bag file |
-| `output_dir` | *required* | - | Where to save output files |
-| `--pc_topic` | `/points` | - | PointCloud2 topic name |
-| `--odom_topic` | `None` | - | Odometry topic (nav_msgs/Odometry) |
-| `--voxel_size` | `0.05` | 0.001-1.0 | Downsampling resolution (meters) |
-| `--icp_dist_thresh` | `0.2` | 0.01-10.0 | Max point correspondence distance (m) |
-| `--icp_fitness_thresh` | `0.6` | 0.0-1.0 | Min % of points aligned to accept frame |
-| `--enable_loop_closure` | `False` | - | Enable loop closure detection |
-| `--loop_closure_radius` | `10.0` | 1.0-50.0 | Search radius for loop closure (meters) |
-| `--loop_closure_fitness_thresh` | `0.3` | 0.0-1.0 | Min fitness for loop closure acceptance |
-| `--level_floor` | `False` | - | Apply post-processing Z-leveling |
-| `--loop_closure_search_interval` | `10` | - | Frequency of loop closure search (every N frames) |
+| Parameter                      | Default  | Range          | Purpose                                                                                                                                                        |
+| ------------------------------ | -------- | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| bag_path                       | required | -              | Path to ROS 2 bag file                                                                                                                                         |
+| output_dir                     | required | -              | Where to save output files                                                                                                                                     |
+| --pc_topic                     | /points  | -              | PointCloud2 topic name                                                                                                                                         |
+| --odom_topic                   | None     | -              | Odometry topic (nav_msgs/Odometry)                                                                                                                             |
+| --voxel_size                   | 0.05     | 0.001-1.0      | Downsampling resolution (meters)                                                                                                                               |
+| --icp_dist_thresh              | 0.2      | 0.01-10.0      | Max point correspondence distance (m)                                                                                                                          |
+| --icp_fitness_thresh           | 0.6      | 0.0-1.0        | Min % of points aligned to accept frame                                                                                                                        |
+| --enable_loop_closure          | False    | -              | Enable loop closure detection                                                                                                                                  |
+| --loop_closure_radius          | 10.0     | 1.0-50.0       | Search radius for loop closure (meters)                                                                                                                        |
+| --loop_closure_fitness_thresh  | 0.3      | 0.0-1.0        | Min fitness for loop closure acceptance                                                                                                                        |
+| --loop_closure_search_interval | 10       | -              | Frequency of loop closure search (every N frames)                                                                                                              |
+| --level_floor                  | False    | -              | Apply post-processing Z-leveling                                                                                                                               |
+| --decimate_target              | None     | 0.01-1.0 or >1 | Reduce mesh triangles after reconstruction. Values ≤ 1.0 = ratio to keep (e.g. 0.25 = keep 25%); values > 1 = absolute triangle count. Omit to skip decimation |
+| --odom_max_latency        | 0.5 s   | Staleness cutoff for odom↔pointcloud timestamp matching |
+| --poisson_depth           | 9       | Octree depth for Poisson reconstruction                 |
+| --density_trim_percentile | 0.05    | Bottom fraction of low-density vertices to remove       |
 
 ---
 
@@ -344,10 +342,7 @@ This rejects more frames but ensures remaining ones are clean.
    --voxel_size 0.1
    ```
 
-2. **Increase loop closue iterations** - Already at 10 by default
-   ```bash
-   --loop_closure_search_interval 20
-   ```
+2. **Reduce ICP iterations** - Already at 50 by default (fast)
 
 3. **Disable loop closure** (if enabled):
    ```bash
