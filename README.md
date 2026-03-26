@@ -2,9 +2,10 @@
 
 Convert ROS 2 bag files containing LiDAR point clouds into high-quality 3D models with precision-tuned registration and drift correction.
 
-<img width="487" height="279" alt="Screenshot from 2026-02-10 11-58-33" src="https://github.com/user-attachments/assets/611a3bb6-dd71-4a18-bd6d-1df476b33ea7" />
+<img width="493" height="300" alt="mine_mesh_2" src="https://github.com/user-attachments/assets/17cacf66-9526-4b59-91fd-97a513fc4d39" />
 
-<img width="487" height="279" alt="Screenshot from 2026-02-10 11-58-52" src="https://github.com/user-attachments/assets/bb6f19b9-ea3d-41e2-954b-e24a419180ac" />
+<img width="493" height="300" alt="mine_mesh_3" src="https://github.com/user-attachments/assets/62d06fab-8cff-449f-a06f-f8d3e61473d0" />
+
 
 ---
 
