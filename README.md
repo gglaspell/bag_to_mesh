@@ -102,6 +102,14 @@ Output files will be in `data/output/`:
 
 ---
 
+
+## 🔥 New!
+How to Run the GUI launcher
+```
+python3 bag_to_mesh_gui.py 
+```
+
+
 ## 💡 Common Use Cases
 
 ### Indoor Mapping with TurtleBot
