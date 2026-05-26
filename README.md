@@ -1,3 +1,6 @@
+# 🔥 Update
+To reduce the number of managed repos, I have integrated this code into a new repo called [bellhop](https://github.com/gglaspell/bellhop).
+
 # ROS 2 Bag to 3D Mesh Converter
 
 Convert ROS 2 bag files containing LiDAR point clouds into high-quality 3D models with precision-tuned registration and drift correction.
